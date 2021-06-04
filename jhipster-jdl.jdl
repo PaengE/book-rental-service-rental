@@ -1,0 +1,26 @@
+entity Rental{
+	id Long,
+    userId Long,
+    rentalStatus RentalStatus
+}
+
+entity RentedItem{
+	id Long,
+    bookId Long,
+    rentedDate LocalDate,
+    dueDate LocalDate
+}
+
+enum RentalStatus{
+	RENT_AVAILABLE, RENT_UNAVAILABLE
+}
+
+relationship ManyToOne{
+	RentedItem{rental} to Rental
+}
+
+paginate * with pagination
+
+dto * with mapstruct
+
+service all with serviceImpl

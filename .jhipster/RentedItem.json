@@ -1,0 +1,42 @@
+{
+  "name": "RentedItem",
+  "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "bookId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "rentedDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "dueDate",
+      "fieldType": "LocalDate"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "rental",
+      "otherEntityRelationshipName": "rentedItem",
+      "relationshipName": "rental"
+    }
+  ],
+  "entityTableName": "rented_item",
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "applications": "*",
+  "microserviceName": "rental",
+  "clientRootFolder": "rental",
+  "databaseType": "sql",
+  "changelogDate": "20210601145018"
+}
