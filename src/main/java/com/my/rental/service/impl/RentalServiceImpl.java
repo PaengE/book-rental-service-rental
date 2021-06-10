@@ -1,11 +1,16 @@
 package com.my.rental.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.my.rental.adapter.RentalProducer;
 import com.my.rental.domain.Rental;
 import com.my.rental.repository.RentalRepository;
 import com.my.rental.service.RentalService;
 import com.my.rental.web.rest.dto.RentalDTO;
+import com.my.rental.web.rest.errors.RentUnavailableException;
 import com.my.rental.web.rest.mapper.RentalMapper;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -16,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Service Implementation for managing {@link Rental}.
  */
+@RequiredArgsConstructor
 @Service
 @Transactional
 public class RentalServiceImpl implements RentalService {
@@ -24,12 +30,9 @@ public class RentalServiceImpl implements RentalService {
 
     private final RentalRepository rentalRepository;
 
-    private final RentalMapper rentalMapper;
+    private final RentalProducer rentalProducer;
 
-    public RentalServiceImpl(RentalRepository rentalRepository, RentalMapper rentalMapper) {
-        this.rentalRepository = rentalRepository;
-        this.rentalMapper = rentalMapper;
-    }
+    private int pointPerBooks = 30;
 
     @Override
     public Rental save(Rental rental) {
@@ -38,38 +41,39 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public Optional<RentalDTO> partialUpdate(RentalDTO rentalDTO) {
-        log.debug("Request to partially update Rental : {}", rentalDTO);
-
-        return rentalRepository
-            .findById(rentalDTO.getId())
-            .map(
-                existingRental -> {
-                    rentalMapper.partialUpdate(existingRental, rentalDTO);
-                    return existingRental;
-                }
-            )
-            .map(rentalRepository::save)
-            .map(rentalMapper::toDto);
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public Page<RentalDTO> findAll(Pageable pageable) {
+    public Page<Rental> findAll(Pageable pageable) {
         log.debug("Request to get all Rentals");
-        return rentalRepository.findAll(pageable).map(rentalMapper::toDto);
+        return rentalRepository.findAll(pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<RentalDTO> findOne(Long id) {
+    public Optional<Rental> findOne(Long id) {
         log.debug("Request to get Rental : {}", id);
-        return rentalRepository.findById(id).map(rentalMapper::toDto);
+        return rentalRepository.findById(id);
     }
 
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Rental : {}", id);
         rentalRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Rental rentBook(Long userId, Long bookId, String bookTitle)
+        throws InterruptedException, ExecutionException, JsonProcessingException, RentUnavailableException {
+        log.debug("Rent Books by : ", userId, " Book List : ", bookId + bookTitle);
+        Rental rental = rentalRepository.findByUserId(userId).get();
+        rental.checkRentalAvailable();
+
+        rental = rental.rentBook(bookId, bookTitle);
+        rentalRepository.save(rental);
+
+        rentalProducer.updateBookStatus(bookId, "UNAVAILABLE"); //send to book service
+        rentalProducer.updateBookCatalogStatus(bookId, "RENT_BOOK"); //send to book catalog service
+        rentalProducer.savePoints(userId, pointPerBooks); //send to user service
+
+        return rental;
     }
 }

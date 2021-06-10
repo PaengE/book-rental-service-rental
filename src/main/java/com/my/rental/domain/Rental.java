@@ -1,8 +1,13 @@
 package com.my.rental.domain;
 
 import com.my.rental.domain.enumeration.RentalStatus;
+import com.my.rental.web.rest.errors.RentUnavailableException;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -12,88 +17,118 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Entity
 @Table(name = "rental")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Data
 public class Rental implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // Rental 일련번호
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
+    // 사용자 일련번호
     @Column(name = "user_id")
     private Long userId;
 
+    // 대출 가능 여부
     @Enumerated(EnumType.STRING)
     @Column(name = "rental_status")
     private RentalStatus rentalStatus;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
-    public Long getId() {
-        return id;
+    // 연체료
+    @Column(name = "late_fee")
+    private Long lateFee;
+
+    // 대출아이템 (고아 객체 제거 -> rental에서 컬렉션의 객체 삭제시, 해당 컬렉션의 entity삭제)
+    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<RentedItem> rentedItems = new HashSet<>();
+
+    // 연체아이템 (고아 객체 제거 -> rental에서 컬렉션의 객체 삭제시, 해당 컬렉션의 entity삭제)
+    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<OverdueItem> overdueItems = new HashSet<>();
+
+    // 반납아이템 (고아 객체 제거 -> rental에서 컬렉션의 객체 삭제시, 해당 컬렉션의 entity삭제)
+    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<ReturnedItem> returnedItems = new HashSet<>();
+
+    // Rental 엔티티 생성
+    public static Rental createRental(Long userId) {
+        Rental rental = new Rental();
+        rental.setUserId(userId);
+        rental.setRentalStatus(RentalStatus.RENT_AVAILABLE);
+        rental.setLateFee(0L);
+        return rental;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Rental id(Long id) {
-        this.id = id;
+    // 대출아이템 추가
+    public Rental addRentedItem(RentedItem rentedItem) {
+        this.rentedItems.add(rentedItem);
+        rentedItem.setRental(this);
         return this;
     }
 
-    public Long getUserId() {
-        return this.userId;
-    }
-
-    public Rental userId(Long userId) {
-        this.userId = userId;
+    // 대출아이템 삭제
+    public Rental removeRentedItem(RentedItem rentedItem) {
+        this.rentedItems.remove(rentedItem);
+        //        rentedItem.setRental(null);
         return this;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public RentalStatus getRentalStatus() {
-        return this.rentalStatus;
-    }
-
-    public Rental rentalStatus(RentalStatus rentalStatus) {
-        this.rentalStatus = rentalStatus;
+    // 연체아이템 추가
+    public Rental addOverdueItem(OverdueItem overdueItem) {
+        this.overdueItems.add(overdueItem);
+        overdueItem.setRental(this);
         return this;
     }
 
-    public void setRentalStatus(RentalStatus rentalStatus) {
-        this.rentalStatus = rentalStatus;
+    // 연체아이템 삭제
+    public Rental removeOverdueItem(OverdueItem overdueItem) {
+        this.overdueItems.remove(overdueItem);
+        //        overdueItem.setRental(null);
+        return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // 반납아이템 추가
+    public Rental addReturnedItem(ReturnedItem returnedItem) {
+        this.returnedItems.add(returnedItem);
+        returnedItem.setRental(this);
+        return this;
+    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    // 반납아이템 삭제
+    public Rental removeReturnedItem(ReturnedItem returnedItem) {
+        this.returnedItems.remove(returnedItem);
+        //        returnedItem.setRental(null);
+        return this;
+    }
+
+    // 대출 가능 여부 체크
+    public boolean checkRentalAvailable() throws RentUnavailableException {
+        if (this.rentalStatus.equals(RentalStatus.RENT_UNAVAILABLE) || this.getLateFee() != 0) {
+            throw new RentUnavailableException("연체 상태입니다. 연체료를 정산 후, 도서를 대출하실 수 있습니다.");
         }
-        if (!(o instanceof Rental)) {
-            return false;
+        if (this.getRentedItems().size() >= 5) {
+            throw new RentUnavailableException("대출 가능한 도서의 수는 " + (5 - this.getRentedItems().size()) + "권 입니다.");
         }
-        return id != null && id.equals(((Rental) o).id);
+        return true;
     }
 
-    @Override
-    public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
+    // 대출 처리 메소드
+    public Rental rentBook(Long bookId, String title) {
+        this.addRentedItem(RentedItem.createRentedItem(bookId, title, LocalDate.now()));
+        return this;
     }
 
-    // prettier-ignore
-    @Override
-    public String toString() {
-        return "Rental{" +
-            "id=" + getId() +
-            ", userId=" + getUserId() +
-            ", rentalStatus='" + getRentalStatus() + "'" +
-            "}";
+    // 반납 처리 메소드
+    public Rental returnBook(Long bookId) {
+        RentedItem rentedItem = this.rentedItems.stream().filter(item -> item.getBookId().equals(bookId)).findFirst().get();
+        this.addReturnedItem(ReturnedItem.createReturnedItem(rentedItem.getBookId(), rentedItem.getBookTitle(), LocalDate.now()));
+        this.removeRentedItem(rentedItem);
+        return this;
     }
 }

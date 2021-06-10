@@ -7,23 +7,19 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * A DTO for the {@link com.my.rental.domain.RentedItem} entity.
- */
-
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
-public class RentedItemDTO implements Serializable {
+public class OverdueItemDTO implements Serializable {
 
     private Long id;
 
     private Long bookId;
 
-    private LocalDate rentedDate;
-
     private LocalDate dueDate;
+
+    private String bookTitle;
 
     private RentalDTO rental;
 }

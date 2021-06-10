@@ -103,42 +103,6 @@ public class RentalResource {
     }
 
     /**
-     * {@code PATCH  /rentals/:id} : Partial updates given fields of an existing rental, field will ignore if it is null
-     *
-     * @param id the id of the rentalDTO to save.
-     * @param rentalDTO the rentalDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rentalDTO,
-     * or with status {@code 400 (Bad Request)} if the rentalDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the rentalDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the rentalDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/rentals/{id}", consumes = "application/merge-patch+json")
-    public ResponseEntity<RentalDTO> partialUpdateRental(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody RentalDTO rentalDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Rental partially : {}, {}", id, rentalDTO);
-        if (rentalDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, rentalDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!rentalRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<RentalDTO> result = rentalService.partialUpdate(rentalDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, rentalDTO.getId().toString())
-        );
-    }
-
-    /**
      * {@code GET  /rentals} : get all the rentals.
      *
      * @param pageable the pagination information.
@@ -147,9 +111,9 @@ public class RentalResource {
     @GetMapping("/rentals")
     public ResponseEntity<List<RentalDTO>> getAllRentals(Pageable pageable) {
         log.debug("REST request to get a page of Rentals");
-        Page<RentalDTO> page = rentalService.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        Page<RentalDTO> rentalPage = rentalService.findAll(pageable).map(rentalMapper::toDto);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), rentalPage);
+        return ResponseEntity.ok().headers(headers).body(rentalPage.getContent());
     }
 
     /**
@@ -161,8 +125,8 @@ public class RentalResource {
     @GetMapping("/rentals/{id}")
     public ResponseEntity<RentalDTO> getRental(@PathVariable Long id) {
         log.debug("REST request to get Rental : {}", id);
-        Optional<RentalDTO> rentalDTO = rentalService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(rentalDTO);
+        RentalDTO rentalDTO = rentalMapper.toDto(rentalService.findOne(id).get());
+        return ResponseEntity.ok().body(rentalDTO);
     }
 
     /**

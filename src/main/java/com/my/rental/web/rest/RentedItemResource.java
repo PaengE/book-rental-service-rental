@@ -1,9 +1,11 @@
 package com.my.rental.web.rest;
 
+import com.my.rental.domain.RentedItem;
 import com.my.rental.repository.RentedItemRepository;
 import com.my.rental.service.RentedItemService;
 import com.my.rental.web.rest.dto.RentedItemDTO;
 import com.my.rental.web.rest.errors.BadRequestAlertException;
+import com.my.rental.web.rest.mapper.RentedItemMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -37,11 +39,16 @@ public class RentedItemResource {
     private String applicationName;
 
     private final RentedItemService rentedItemService;
-
+    private final RentedItemMapper rentedItemMapper;
     private final RentedItemRepository rentedItemRepository;
 
-    public RentedItemResource(RentedItemService rentedItemService, RentedItemRepository rentedItemRepository) {
+    public RentedItemResource(
+        RentedItemService rentedItemService,
+        RentedItemMapper rentedItemMapper,
+        RentedItemRepository rentedItemRepository
+    ) {
         this.rentedItemService = rentedItemService;
+        this.rentedItemMapper = rentedItemMapper;
         this.rentedItemRepository = rentedItemRepository;
     }
 
@@ -58,7 +65,7 @@ public class RentedItemResource {
         if (rentedItemDTO.getId() != null) {
             throw new BadRequestAlertException("A new rentedItem cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        RentedItemDTO result = rentedItemService.save(rentedItemDTO);
+        RentedItemDTO result = rentedItemMapper.toDto(rentedItemService.save(rentedItemMapper.toEntity(rentedItemDTO)));
         return ResponseEntity
             .created(new URI("/api/rented-items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -92,47 +99,11 @@ public class RentedItemResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        RentedItemDTO result = rentedItemService.save(rentedItemDTO);
+        RentedItemDTO result = rentedItemMapper.toDto(rentedItemService.save(rentedItemMapper.toEntity(rentedItemDTO)));
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, rentedItemDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /rented-items/:id} : Partial updates given fields of an existing rentedItem, field will ignore if it is null
-     *
-     * @param id the id of the rentedItemDTO to save.
-     * @param rentedItemDTO the rentedItemDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rentedItemDTO,
-     * or with status {@code 400 (Bad Request)} if the rentedItemDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the rentedItemDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the rentedItemDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/rented-items/{id}", consumes = "application/merge-patch+json")
-    public ResponseEntity<RentedItemDTO> partialUpdateRentedItem(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody RentedItemDTO rentedItemDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update RentedItem partially : {}, {}", id, rentedItemDTO);
-        if (rentedItemDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, rentedItemDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!rentedItemRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<RentedItemDTO> result = rentedItemService.partialUpdate(rentedItemDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, rentedItemDTO.getId().toString())
-        );
     }
 
     /**
@@ -144,7 +115,7 @@ public class RentedItemResource {
     @GetMapping("/rented-items")
     public ResponseEntity<List<RentedItemDTO>> getAllRentedItems(Pageable pageable) {
         log.debug("REST request to get a page of RentedItems");
-        Page<RentedItemDTO> page = rentedItemService.findAll(pageable);
+        Page<RentedItemDTO> page = rentedItemService.findAll(pageable).map(rentedItemMapper::toDto);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -158,7 +129,7 @@ public class RentedItemResource {
     @GetMapping("/rented-items/{id}")
     public ResponseEntity<RentedItemDTO> getRentedItem(@PathVariable Long id) {
         log.debug("REST request to get RentedItem : {}", id);
-        Optional<RentedItemDTO> rentedItemDTO = rentedItemService.findOne(id);
+        Optional<RentedItemDTO> rentedItemDTO = rentedItemService.findOne(id).map(rentedItemMapper::toDto);
         return ResponseUtil.wrapOrNotFound(rentedItemDTO);
     }
 

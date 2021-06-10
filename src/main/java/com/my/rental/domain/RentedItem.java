@@ -1,8 +1,10 @@
 package com.my.rental.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.LocalDate;
 import javax.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -12,43 +14,46 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Entity
 @Table(name = "rented_item")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Data
 public class RentedItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 대출 아이템 일련번호
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
+    // 대출한 도서의 일련번호
     @Column(name = "book_id")
     private Long bookId;
 
+    // 대출 도서명
+    @Column(name = "book_title")
+    private String bookTitle;
+
+    // 대출 시작 일자
     @Column(name = "rented_date")
     private LocalDate rentedDate;
 
+    // 반납 예정 일자
     @Column(name = "due_date")
     private LocalDate dueDate;
 
+    // 연관 Rental
     @ManyToOne
+    @JsonIgnoreProperties("rentedItems")
     private Rental rental;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public RentedItem id(Long id) {
-        this.id = id;
-        return this;
-    }
-
-    public Long getBookId() {
-        return this.bookId;
+    // 대출 아이템 생성 메소드
+    public static RentedItem createRentedItem(Long bookId, String bookTitle, LocalDate rentedDate) {
+        RentedItem rentedItem = new RentedItem();
+        rentedItem.setBookId(bookId);
+        rentedItem.setBookTitle(bookTitle);
+        rentedItem.setRentedDate(rentedDate);
+        rentedItem.setDueDate(rentedDate.plusWeeks(2));
+        return rentedItem;
     }
 
     public RentedItem bookId(Long bookId) {
@@ -56,76 +61,18 @@ public class RentedItem implements Serializable {
         return this;
     }
 
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
-    }
-
-    public LocalDate getRentedDate() {
-        return this.rentedDate;
-    }
-
     public RentedItem rentedDate(LocalDate rentedDate) {
         this.rentedDate = rentedDate;
         return this;
     }
 
-    public void setRentedDate(LocalDate rentedDate) {
-        this.rentedDate = rentedDate;
-    }
-
-    public LocalDate getDueDate() {
-        return this.dueDate;
+    public RentedItem bookTitle(String bookTitle) {
+        this.bookTitle = bookTitle;
+        return this;
     }
 
     public RentedItem dueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
         return this;
-    }
-
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public Rental getRental() {
-        return this.rental;
-    }
-
-    public RentedItem rental(Rental rental) {
-        this.setRental(rental);
-        return this;
-    }
-
-    public void setRental(Rental rental) {
-        this.rental = rental;
-    }
-
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof RentedItem)) {
-            return false;
-        }
-        return id != null && id.equals(((RentedItem) o).id);
-    }
-
-    @Override
-    public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
-    }
-
-    // prettier-ignore
-    @Override
-    public String toString() {
-        return "RentedItem{" +
-            "id=" + getId() +
-            ", bookId=" + getBookId() +
-            ", rentedDate='" + getRentedDate() + "'" +
-            ", dueDate='" + getDueDate() + "'" +
-            "}";
     }
 }
