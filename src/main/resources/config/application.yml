@@ -41,11 +41,11 @@ eureka:
 feign:
   hystrix:
     enabled: true
-  # client:
-  #   config:
-  #     default:
-  #       connectTimeout: 5000
-  #       readTimeout: 5000
+    client:
+      config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
 
 # See https://github.com/Netflix/Hystrix/wiki/Configuration
 hystrix:
@@ -55,8 +55,8 @@ hystrix:
         isolation:
           strategy: SEMAPHORE
           # See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
-          # thread:
-          #   timeoutInMilliseconds: 10000
+          thread:
+            timeoutInMilliseconds: 10000
   shareSecurityContext: true
 
 management:

@@ -1,6 +1,7 @@
 package com.my.rental.web.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.my.rental.adaptor.BookClient;
 import com.my.rental.domain.Rental;
 import com.my.rental.repository.RentalRepository;
 import com.my.rental.service.RentalService;
@@ -13,7 +14,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.my.rental.domain.Rental}.
@@ -45,11 +44,18 @@ public class RentalResource {
     private final RentalService rentalService;
     private final RentalMapper rentalMapper;
     private final RentalRepository rentalRepository;
+    private final BookClient bookClient;
 
-    public RentalResource(RentalService rentalService, RentalMapper rentalMapper, RentalRepository rentalRepository) {
+    public RentalResource(
+        RentalService rentalService,
+        RentalMapper rentalMapper,
+        RentalRepository rentalRepository,
+        BookClient bookClient
+    ) {
         this.rentalService = rentalService;
         this.rentalMapper = rentalMapper;
         this.rentalRepository = rentalRepository;
+        this.bookClient = bookClient;
     }
 
     /**

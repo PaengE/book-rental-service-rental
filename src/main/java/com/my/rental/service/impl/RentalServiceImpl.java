@@ -1,13 +1,11 @@
 package com.my.rental.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.my.rental.adapter.RentalProducer;
+import com.my.rental.adaptor.RentalProducer;
 import com.my.rental.domain.Rental;
 import com.my.rental.repository.RentalRepository;
 import com.my.rental.service.RentalService;
-import com.my.rental.web.rest.dto.RentalDTO;
 import com.my.rental.web.rest.errors.RentUnavailableException;
-import com.my.rental.web.rest.mapper.RentalMapper;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;

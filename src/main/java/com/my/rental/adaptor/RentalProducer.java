@@ -1,4 +1,4 @@
-package com.my.rental.adapter;
+package com.my.rental.adaptor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.concurrent.ExecutionException;
