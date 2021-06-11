@@ -1,15 +1,20 @@
 package com.my.rental.web.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.my.rental.domain.Rental;
 import com.my.rental.repository.RentalRepository;
 import com.my.rental.service.RentalService;
+import com.my.rental.web.rest.dto.BookInfoDTO;
 import com.my.rental.web.rest.dto.RentalDTO;
 import com.my.rental.web.rest.errors.BadRequestAlertException;
+import com.my.rental.web.rest.errors.RentUnavailableException;
 import com.my.rental.web.rest.mapper.RentalMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -143,5 +148,42 @@ public class RentalResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * 도서 대출 하기
+     * @param userid
+     * @param bookId
+     * @return
+     */
+    @PostMapping("/rentals/{userid}/RentedItem/{book}")
+    public ResponseEntity<RentalDTO> rentBooks(@PathVariable("userid") Long userid, @PathVariable("book") Long bookId)
+        throws InterruptedException, ExecutionException, JsonProcessingException, RentUnavailableException {
+        log.debug("rent book request");
+
+        ResponseEntity<BookInfoDTO> bookInfoResult = bookClient.findBookInfo(bookId); // feign - 책 정보 가져오기
+        BookInfoDTO bookInfoDTO = bookInfoResult.getBody();
+        log.debug("book info list", bookInfoDTO.toString());
+
+        Rental rental = rentalService.rentBook(userid, bookInfoDTO.getId(), bookInfoDTO.getTitle());
+        RentalDTO rentalDTO = rentalMapper.toDto(rental);
+        return ResponseEntity.ok().body(rentalDTO);
+    }
+
+    /**
+     * 도서 반납 하기
+     * @param userid
+     * @param book
+     * @return
+     */
+    @DeleteMapping("/rentals/{userid}/RentedItem/{book}")
+    public ResponseEntity<RentalDTO> returnBooks(@PathVariable("userid") Long userid, @PathVariable("book") Long book)
+        throws InterruptedException, ExecutionException, JsonProcessingException {
+        Rental rental = rentalService.returnBook(userid, book);
+        log.debug("returned books");
+        log.debug("SEND BOOKIDS for Book: {}", book);
+
+        RentalDTO result = rentalMapper.toDto(rental);
+        return ResponseEntity.ok().body(result);
     }
 }
