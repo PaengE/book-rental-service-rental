@@ -51,4 +51,13 @@ public interface RentalService {
      *
      * ****/
     Rental rentBook(Long userId, Long bookId, String bookTitle) throws InterruptedException, ExecutionException, JsonProcessingException;
+
+    /****
+     *
+     * Business Logic
+     *
+     * 책 반납하기
+     *
+     * ****/
+    Rental returnBook(Long userId, Long bookIds) throws ExecutionException, InterruptedException, JsonProcessingException;
 }

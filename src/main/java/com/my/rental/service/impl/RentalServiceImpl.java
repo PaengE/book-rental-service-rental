@@ -60,19 +60,54 @@ public class RentalServiceImpl implements RentalService {
         rentalRepository.deleteById(id);
     }
 
+    /**
+     * 도서 대출하기
+     *
+     * @param userId
+     * @param bookId
+     * @param bookTitle
+     * @return
+     */
     @Transactional
     public Rental rentBook(Long userId, Long bookId, String bookTitle)
         throws InterruptedException, ExecutionException, JsonProcessingException, RentUnavailableException {
         log.debug("Rent Books by : ", userId, " Book List : ", bookId + bookTitle);
-        Rental rental = rentalRepository.findByUserId(userId).get();
-        rental.checkRentalAvailable();
+        Rental rental = rentalRepository.findByUserId(userId).get(); // Rental 조회
+        rental.checkRentalAvailable(); // 대출 가능 상태 조회
 
-        rental = rental.rentBook(bookId, bookTitle);
-        rentalRepository.save(rental);
+        rental = rental.rentBook(bookId, bookTitle); // Rental에 대출 처리 위임
+        rentalRepository.save(rental); // Rental 저장
 
-        rentalProducer.updateBookStatus(bookId, "UNAVAILABLE"); //send to book service
-        rentalProducer.updateBookCatalogStatus(bookId, "RENT_BOOK"); //send to book catalog service
-        rentalProducer.savePoints(userId, pointPerBooks); //send to user service
+        // 도서 서비스에 도서 재고 감소를 위해 도서대출 이벤트 발송
+        rentalProducer.updateBookStatus(bookId, "UNAVAILABLE");
+
+        // 돗서 카탈로그 서비스에 대출된 도서로 상태를 변경하기 위한 이벤트 발송
+        rentalProducer.updateBookCatalogStatus(bookId, "RENT_BOOK");
+
+        // 대출로 인한 사용자 포인트 적립을 위해 사용자 서비스에 이벤트 발송
+        rentalProducer.savePoints(userId, pointPerBooks);
+
+        return rental;
+    }
+
+    /**
+     * 도서 반납하기
+     *
+     * @param userId
+     * @param bookId
+     * @return
+     */
+    @Transactional
+    public Rental returnBook(Long userId, Long bookId) throws ExecutionException, InterruptedException, JsonProcessingException {
+        Rental rental = rentalRepository.findByUserId(userId).get(); // Rental 조회
+        rental = rental.returnBook(bookId); // Rental에 반납 처리 위임
+        rental = rentalRepository.save(rental); // Rental 저장
+
+        // 도서 서비스에 도서재고 증가를 위해 도서반납 이벤트 발송
+        rentalProducer.updateBookStatus(bookId, "AVAILABLE");
+
+        // 도서 카탈로그 서비스에 대출 가능한 도서로 상태를 변경하기 위한 이벤트 발송
+        rentalProducer.updateBookCatalogStatus(bookId, "RETURN_BOOK");
 
         return rental;
     }

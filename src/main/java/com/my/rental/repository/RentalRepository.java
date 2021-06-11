@@ -10,6 +10,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface RentalRepository extends JpaRepository<Rental, Long> {
-    Optional<Rental> findByUserId(Long id);
-}
+public interface RentalRepository extends JpaRepository<Rental, Long> {}
