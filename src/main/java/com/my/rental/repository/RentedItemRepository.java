@@ -12,4 +12,8 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface RentedItemRepository extends JpaRepository<RentedItem, Long> {}
+public interface RentedItemRepository extends JpaRepository<RentedItem, Long> {
+    RentedItem findByBookId(Long bookId);
+    Page<RentedItem> findByRental(Rental rental, Pageable pageable);
+    Page<RentedItem> findByBookTitleContaining(String bookTitle, Pageable pageable);
+}
