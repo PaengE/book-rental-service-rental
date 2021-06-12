@@ -56,6 +56,11 @@ public class Rental implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<ReturnedItem> returnedItems = new HashSet<>();
 
+    public Rental userId(Long userId) {
+        this.userId = userId;
+        return this;
+    }
+
     // Rental 엔티티 생성
     public static Rental createRental(Long userId) {
         Rental rental = new Rental();
