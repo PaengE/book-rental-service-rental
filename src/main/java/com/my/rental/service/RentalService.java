@@ -60,4 +60,30 @@ public interface RentalService {
      *
      * ****/
     Rental returnBook(Long userId, Long bookIds) throws ExecutionException, InterruptedException, JsonProcessingException;
+
+    /****
+     *
+     * Business Logic
+     *
+     * 연체 도서 반납하기
+     *
+     * ****/
+    Rental returnOverdueBook(Long userid, Long book) throws ExecutionException, InterruptedException, JsonProcessingException;
+
+    /****
+     *
+     * Business Logic
+     *
+     * 연체 상태 해제하기
+     *
+     * ****/
+    Rental releaseOverdue(Long userId);
+    /****
+     *
+     * Business Logic
+     *
+     * 연체 상태로 변경
+     *
+     * ****/
+    Long beOverdueBook(Long rentalId, Long bookId);
 }

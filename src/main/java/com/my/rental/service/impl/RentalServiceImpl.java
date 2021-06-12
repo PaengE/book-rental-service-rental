@@ -109,4 +109,49 @@ public class RentalServiceImpl implements RentalService {
 
         return rental;
     }
+
+    /**
+     * 연체 도서 반납
+     *
+     * @param userid
+     * @param book
+     * @return
+     */
+    @Override
+    public Rental returnOverdueBook(Long userid, Long book) throws ExecutionException, InterruptedException, JsonProcessingException {
+        Rental rental = rentalRepository.findByUserId(userid).get();
+        rental = rental.returnOverdueBook(book);
+        rentalProducer.updateBookStatus(book, "AVAILABLE");
+        rentalProducer.updateBookCatalogStatus(book, "RETURN_BOOK");
+        return rentalRepository.save(rental);
+    }
+
+    /**
+     * 대출 불가 해제
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public Rental releaseOverdue(Long userId) {
+        Rental rental = rentalRepository.findByUserId(userId).get();
+        rental = rental.releaseOverdue();
+        return rentalRepository.save(rental);
+    }
+
+    /**
+     * 연체 도서 처리
+     *
+     * @param rentalId
+     * @param bookId
+     * @return
+     */
+    @Override
+    public Long beOverdueBook(Long rentalId, Long bookId) {
+        Rental rental = rentalRepository.findById(rentalId).get();
+        rental = rental.overdueBook(bookId);
+        rental = rental.makeRentUnable();
+        rentalRepository.save(rental);
+        return bookId;
+    }
 }

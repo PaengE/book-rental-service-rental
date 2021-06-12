@@ -136,4 +136,39 @@ public class Rental implements Serializable {
         this.removeRentedItem(rentedItem);
         return this;
     }
+
+    // 연체 처리 메소드
+    public Rental overdueBook(Long bookId) {
+        RentedItem rentedItem = this.rentedItems.stream().filter(item -> item.getBookId().equals(bookId)).findFirst().get();
+        this.addOverdueItem(OverdueItem.createOverdueItem(rentedItem.getBookId(), rentedItem.getBookTitle(), rentedItem.getDueDate()));
+        this.removeRentedItem(rentedItem);
+        return this;
+    }
+
+    // 연체 아이템 반납 처리 메소드
+    public Rental returnOverdueBook(Long bookId) {
+        OverdueItem overdueItem = this.overdueItems.stream().filter(item -> item.getBookId().equals(bookId)).findFirst().get();
+        this.addReturnedItem(ReturnedItem.createReturnedItem(overdueItem.getBookId(), overdueItem.getBookTitle(), LocalDate.now()));
+        this.removeOverdueItem(overdueItem);
+        return this;
+    }
+
+    // 대출 불가 처리 메소드
+    public Rental makeRentUnable() {
+        this.setRentalStatus(RentalStatus.RENT_UNAVAILABLE);
+        this.setLateFee(this.getLateFee() + 30); // 도서 연체 시 연체료 + 30
+        return this;
+    }
+
+    // 대출 불가 해제 메소드
+    public Rental releaseOverdue() {
+        this.setLateFee(0L);
+        this.setRentalStatus(RentalStatus.RENT_AVAILABLE);
+        return this;
+    }
+
+    public Rental lateFee(Long lateFee) {
+        this.lateFee = lateFee;
+        return this;
+    }
 }
