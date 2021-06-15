@@ -154,4 +154,15 @@ public class RentalServiceImpl implements RentalService {
         rentalRepository.save(rental);
         return bookId;
     }
+
+    /**
+     * 연체료 조회
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public int findLateFee(Long userId) {
+        return rentalRepository.findByUserId(userId).get().getLateFee();
+    }
 }

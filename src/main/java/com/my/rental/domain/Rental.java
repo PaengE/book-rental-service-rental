@@ -39,7 +39,7 @@ public class Rental implements Serializable {
 
     // 연체료
     @Column(name = "late_fee")
-    private Long lateFee;
+    private int lateFee;
 
     // 대출아이템 (고아 객체 제거 -> rental에서 컬렉션의 객체 삭제시, 해당 컬렉션의 entity삭제)
     @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -66,7 +66,7 @@ public class Rental implements Serializable {
         Rental rental = new Rental();
         rental.setUserId(userId);
         rental.setRentalStatus(RentalStatus.RENT_AVAILABLE);
-        rental.setLateFee(0L);
+        rental.setLateFee(0);
         return rental;
     }
 
@@ -162,12 +162,12 @@ public class Rental implements Serializable {
 
     // 대출 불가 해제 메소드
     public Rental releaseOverdue() {
-        this.setLateFee(0L);
+        this.setLateFee(0);
         this.setRentalStatus(RentalStatus.RENT_AVAILABLE);
         return this;
     }
 
-    public Rental lateFee(Long lateFee) {
+    public Rental lateFee(int lateFee) {
         this.lateFee = lateFee;
         return this;
     }

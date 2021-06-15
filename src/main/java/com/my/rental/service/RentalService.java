@@ -78,6 +78,7 @@ public interface RentalService {
      *
      * ****/
     Rental releaseOverdue(Long userId);
+
     /****
      *
      * Business Logic
@@ -86,4 +87,12 @@ public interface RentalService {
      *
      * ****/
     Long beOverdueBook(Long rentalId, Long bookId);
+
+    /**
+     * 연체료 조회
+     *
+     * @param userId
+     * @return
+     */
+    int findLateFee(Long userId);
 }
