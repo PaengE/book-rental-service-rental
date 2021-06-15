@@ -4,17 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.LocalDate;
 import javax.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A RentedItem.
  */
+@Setter
+@Getter
 @Entity
 @Table(name = "rented_item")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Data
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class RentedItem implements Serializable {
 
     private static final long serialVersionUID = 1L;

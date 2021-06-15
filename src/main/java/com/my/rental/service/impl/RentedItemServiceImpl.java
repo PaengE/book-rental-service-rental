@@ -29,6 +29,7 @@ public class RentedItemServiceImpl implements RentedItemService {
 
     private final RentedItemRepository rentedItemRepository;
     private final RentalService rentalService;
+    private final RentedItemMapper rentedItemMapper;
 
     @Override
     public RentedItem save(RentedItem rentedItem) {

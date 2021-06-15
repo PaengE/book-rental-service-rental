@@ -14,11 +14,11 @@ public interface RentalMapper extends EntityMapper<RentalDTO, Rental> {
     //    @Mapping(target = "id", source = "id")
     //    RentalDTO toDtoId(Rental rental);
 
-    @Mapping(target = "rentedItems", ignore = true)
+    //    @Mapping(target = "rentedItems", ignore = true)
     @Mapping(target = "removeRentedItem", ignore = true)
-    @Mapping(target = "overdueItems", ignore = true)
+    //    @Mapping(target = "overdueItems", ignore = true)
     @Mapping(target = "removeOverdueItem", ignore = true)
-    @Mapping(target = "returnedItems", ignore = true)
+    //    @Mapping(target = "returnedItems", ignore = true)
     @Mapping(target = "removeReturnedItem", ignore = true)
     Rental toEntity(RentalDTO rentalDTO);
 

@@ -10,10 +10,10 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring", uses = { RentalMapper.class })
 public interface ReturnedItemMapper {
-    @Mapping(source = "rental.id", target = "rentalId")
+    //    @Mapping(source = "rental.id", target = "rentalId")
     ReturnedItemDTO toDto(ReturnedItem returnedItem);
 
-    @Mapping(source = "rentalId", target = "rental")
+    //    @Mapping(source = "rentalId", target = "rental")
     ReturnedItem toEntity(ReturnedItemDTO returnedItemDTO);
 
     default ReturnedItem fromId(Long id) {

@@ -7,17 +7,19 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Rental.
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "rental")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Data
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Rental implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -58,6 +60,11 @@ public class Rental implements Serializable {
 
     public Rental userId(Long userId) {
         this.userId = userId;
+        return this;
+    }
+
+    public Rental rentalStatus(RentalStatus rentalStatus) {
+        this.rentalStatus = rentalStatus;
         return this;
     }
 
