@@ -3,6 +3,9 @@ package com.my.rental.adaptor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * 비동기 어댑터 (Kafka) 인터페이스
+ */
 public interface RentalProducer {
     // kafka 메시지 발행 - 책 상태 변경 - book service
     void updateBookStatus(Long bookId, String bookStatus) throws ExecutionException, InterruptedException, JsonProcessingException;

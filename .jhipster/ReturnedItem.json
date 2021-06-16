@@ -1,0 +1,40 @@
+{
+    "name": "ReturnedItem",
+    "fields": [
+        {
+            "fieldName": "bookId",
+            "fieldType": "Long"
+        },
+        {
+            "fieldName": "returnedDate",
+            "fieldType": "LocalDate"
+        },
+        {
+            "fieldName": "bookTitle",
+            "fieldType": "String"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "rental",
+            "otherEntityRelationshipName": "returnedItem",
+            "relationshipName": "rental",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20200518075500",
+    "entityTableName": "returned_item",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "embedded": false,
+    "clientRootFolder": "rental",
+    "applications": "*",
+    "microserviceName": "rental",
+    "searchEngine": false,
+    "databaseType": "sql"
+}

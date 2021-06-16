@@ -7,17 +7,19 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Rental.
  */
+@Getter
+@Setter
 @Entity
 @Table(name = "rental")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Data
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Rental implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -39,7 +41,7 @@ public class Rental implements Serializable {
 
     // 연체료
     @Column(name = "late_fee")
-    private Long lateFee;
+    private int lateFee;
 
     // 대출아이템 (고아 객체 제거 -> rental에서 컬렉션의 객체 삭제시, 해당 컬렉션의 entity삭제)
     @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -61,12 +63,17 @@ public class Rental implements Serializable {
         return this;
     }
 
+    public Rental rentalStatus(RentalStatus rentalStatus) {
+        this.rentalStatus = rentalStatus;
+        return this;
+    }
+
     // Rental 엔티티 생성
     public static Rental createRental(Long userId) {
         Rental rental = new Rental();
         rental.setUserId(userId);
         rental.setRentalStatus(RentalStatus.RENT_AVAILABLE);
-        rental.setLateFee(0L);
+        rental.setLateFee(0);
         return rental;
     }
 
@@ -134,6 +141,41 @@ public class Rental implements Serializable {
         RentedItem rentedItem = this.rentedItems.stream().filter(item -> item.getBookId().equals(bookId)).findFirst().get();
         this.addReturnedItem(ReturnedItem.createReturnedItem(rentedItem.getBookId(), rentedItem.getBookTitle(), LocalDate.now()));
         this.removeRentedItem(rentedItem);
+        return this;
+    }
+
+    // 연체 처리 메소드
+    public Rental overdueBook(Long bookId) {
+        RentedItem rentedItem = this.rentedItems.stream().filter(item -> item.getBookId().equals(bookId)).findFirst().get();
+        this.addOverdueItem(OverdueItem.createOverdueItem(rentedItem.getBookId(), rentedItem.getBookTitle(), rentedItem.getDueDate()));
+        this.removeRentedItem(rentedItem);
+        return this;
+    }
+
+    // 연체 아이템 반납 처리 메소드
+    public Rental returnOverdueBook(Long bookId) {
+        OverdueItem overdueItem = this.overdueItems.stream().filter(item -> item.getBookId().equals(bookId)).findFirst().get();
+        this.addReturnedItem(ReturnedItem.createReturnedItem(overdueItem.getBookId(), overdueItem.getBookTitle(), LocalDate.now()));
+        this.removeOverdueItem(overdueItem);
+        return this;
+    }
+
+    // 대출 불가 처리 메소드
+    public Rental makeRentUnable() {
+        this.setRentalStatus(RentalStatus.RENT_UNAVAILABLE);
+        this.setLateFee(this.getLateFee() + 30); // 도서 연체 시 연체료 + 30
+        return this;
+    }
+
+    // 대출 불가 해제 메소드
+    public Rental releaseOverdue() {
+        this.setLateFee(0);
+        this.setRentalStatus(RentalStatus.RENT_AVAILABLE);
+        return this;
+    }
+
+    public Rental lateFee(int lateFee) {
+        this.lateFee = lateFee;
         return this;
     }
 }

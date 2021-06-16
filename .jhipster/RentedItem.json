@@ -2,10 +2,6 @@
   "name": "RentedItem",
   "fields": [
     {
-      "fieldName": "id",
-      "fieldType": "Long"
-    },
-    {
       "fieldName": "bookId",
       "fieldType": "Long"
     },
@@ -16,6 +12,10 @@
     {
       "fieldName": "dueDate",
       "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "bookTitle",
+      "fieldType": "String"
     }
   ],
   "relationships": [
@@ -23,9 +23,11 @@
       "relationshipType": "many-to-one",
       "otherEntityName": "rental",
       "otherEntityRelationshipName": "rentedItem",
-      "relationshipName": "rental"
+      "relationshipName": "rental",
+      "otherEntityField": "id"
     }
   ],
+  "changelogDate": "20200518075300",
   "entityTableName": "rented_item",
   "dto": "mapstruct",
   "pagination": "pagination",
@@ -34,9 +36,9 @@
   "fluentMethods": true,
   "readOnly": false,
   "embedded": false,
+  "clientRootFolder": "rental",
   "applications": "*",
   "microserviceName": "rental",
-  "clientRootFolder": "rental",
-  "databaseType": "sql",
-  "changelogDate": "20210601145018"
+  "searchEngine": false,
+  "databaseType": "sql"
 }

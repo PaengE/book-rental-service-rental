@@ -40,7 +40,5 @@ public interface ReturnedItemService {
      */
     void delete(Long id);
 
-    ReturnedItem findByBookId(Long bookId);
-
-    Page<ReturnedItem> findByRental(Rental rental, java.awt.print.Pageable pageable);
+    Page<ReturnedItem> findReturnedItemsByRental(Long rentalId, Pageable pageable);
 }

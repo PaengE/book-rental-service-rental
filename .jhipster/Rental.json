@@ -2,10 +2,6 @@
   "name": "Rental",
   "fields": [
     {
-      "fieldName": "id",
-      "fieldType": "Long"
-    },
-    {
       "fieldName": "userId",
       "fieldType": "Long"
     },
@@ -13,9 +9,33 @@
       "fieldName": "rentalStatus",
       "fieldType": "RentalStatus",
       "fieldValues": "RENT_AVAILABLE,RENT_UNAVAILABLE"
+    },
+    {
+      "fieldName": "lateFee",
+      "fieldType": "Long"
     }
   ],
-  "relationships": [],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "rentedItem",
+      "otherEntityRelationshipName": "rental",
+      "relationshipName": "rentedItem"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "overdueItem",
+      "otherEntityRelationshipName": "rental",
+      "relationshipName": "overdueItem"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "returnedItem",
+      "otherEntityRelationshipName": "rental",
+      "relationshipName": "returnedItem"
+    }
+  ],
+  "changelogDate": "20200518075200",
   "entityTableName": "rental",
   "dto": "mapstruct",
   "pagination": "pagination",
@@ -24,9 +44,9 @@
   "fluentMethods": true,
   "readOnly": false,
   "embedded": false,
+  "clientRootFolder": "rental",
   "applications": "*",
   "microserviceName": "rental",
-  "clientRootFolder": "rental",
-  "databaseType": "sql",
-  "changelogDate": "20210601145017"
+  "searchEngine": false,
+  "databaseType": "sql"
 }

@@ -2,14 +2,18 @@ package com.my.rental.web.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.my.rental.adaptor.BookClient;
+import com.my.rental.adaptor.UserClient;
 import com.my.rental.domain.Rental;
 import com.my.rental.repository.RentalRepository;
 import com.my.rental.service.RentalService;
 import com.my.rental.web.rest.dto.BookInfoDTO;
+import com.my.rental.web.rest.dto.LateFeeDTO;
 import com.my.rental.web.rest.dto.RentalDTO;
 import com.my.rental.web.rest.errors.BadRequestAlertException;
+import com.my.rental.web.rest.errors.FeignClientException;
 import com.my.rental.web.rest.errors.RentUnavailableException;
 import com.my.rental.web.rest.mapper.RentalMapper;
+import feign.FeignException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -21,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -45,17 +50,20 @@ public class RentalResource {
     private final RentalMapper rentalMapper;
     private final RentalRepository rentalRepository;
     private final BookClient bookClient;
+    private final UserClient userClient;
 
     public RentalResource(
         RentalService rentalService,
         RentalMapper rentalMapper,
         RentalRepository rentalRepository,
-        BookClient bookClient
+        BookClient bookClient,
+        UserClient userClient
     ) {
         this.rentalService = rentalService;
         this.rentalMapper = rentalMapper;
         this.rentalRepository = rentalRepository;
         this.bookClient = bookClient;
+        this.userClient = userClient;
     }
 
     /**
@@ -82,7 +90,7 @@ public class RentalResource {
     /**
      * {@code PUT  /rentals/:id} : Updates an existing rental.
      *
-     * @param id the id of the rentalDTO to save.
+     * @param id        the id of the rentalDTO to save.
      * @param rentalDTO the rentalDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rentalDTO,
      * or with status {@code 400 (Bad Request)} if the rentalDTO is not valid,
@@ -158,6 +166,7 @@ public class RentalResource {
 
     /**
      * 도서 대출 하기
+     *
      * @param userid
      * @param bookId
      * @return
@@ -178,6 +187,7 @@ public class RentalResource {
 
     /**
      * 도서 반납 하기
+     *
      * @param userid
      * @param book
      * @return
@@ -191,5 +201,23 @@ public class RentalResource {
 
         RentalDTO result = rentalMapper.toDto(rental);
         return ResponseEntity.ok().body(result);
+    }
+
+    @PutMapping("/rentals/release-overdue/user/{userId}")
+    public ResponseEntity releaseOverdue(@PathVariable("userId") Long userId) {
+        LateFeeDTO latefeeDTO = new LateFeeDTO();
+        latefeeDTO.setUserId(userId);
+        latefeeDTO.setLateFee(rentalService.findLateFee(userId));
+
+        try {
+            userClient.usePoint(latefeeDTO);
+        } catch (FeignClientException e) {
+            if (Integer.valueOf(HttpStatus.NOT_FOUND.value()).equals(e.getStatus())) {
+                throw e;
+            }
+        }
+
+        RentalDTO rentalDTO = rentalMapper.toDto(rentalService.releaseOverdue(userId));
+        return ResponseEntity.ok().body(rentalDTO);
     }
 }
