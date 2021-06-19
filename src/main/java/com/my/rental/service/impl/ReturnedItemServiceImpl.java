@@ -2,7 +2,6 @@ package com.my.rental.service.impl;
 
 import com.my.rental.domain.Rental;
 import com.my.rental.domain.ReturnedItem;
-import com.my.rental.repository.RentalRepository;
 import com.my.rental.repository.ReturnedItemRepository;
 import com.my.rental.service.RentalService;
 import com.my.rental.service.ReturnedItemService;

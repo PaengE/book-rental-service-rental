@@ -23,7 +23,7 @@
             "otherEntityField": "id"
         }
     ],
-    "changelogDate": "20200518075500",
+    "changelogDate": "20210618233820",
     "entityTableName": "returned_item",
     "dto": "mapstruct",
     "pagination": "pagination",

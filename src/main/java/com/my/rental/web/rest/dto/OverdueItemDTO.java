@@ -17,5 +17,5 @@ public class OverdueItemDTO implements Serializable {
 
     private String bookTitle;
 
-    private RentalDTO rental;
+    private Long rentalId;
 }

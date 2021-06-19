@@ -25,17 +25,17 @@ public class ReturnedItem implements Serializable {
     @Column(name = "book_id")
     private Long bookId;
 
+    // 반납한 일자
+    @Column(name = "returned_date")
+    private LocalDate returnedDate;
+
     // 반납한 도서명
     @Column(name = "book_title")
     private String bookTitle;
 
-    // 반납한 일자
-    @Column(name = "retunred_date")
-    private LocalDate returnedDate;
-
     // 연관 Rental
     @ManyToOne
-    @JsonIgnoreProperties("retunredItems")
+    @JsonIgnoreProperties("returnedItems")
     private Rental rental;
 
     // 반납 아이템 생성 메소드

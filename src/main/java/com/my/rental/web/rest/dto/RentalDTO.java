@@ -18,4 +18,6 @@ public class RentalDTO implements Serializable {
     private Long userId;
 
     private RentalStatus rentalStatus;
+
+    private int lateFee;
 }

@@ -1,6 +1,5 @@
 package com.my.rental.web.rest;
 
-import com.my.rental.domain.RentedItem;
 import com.my.rental.repository.RentedItemRepository;
 import com.my.rental.service.RentedItemService;
 import com.my.rental.web.rest.dto.RentedItemDTO;

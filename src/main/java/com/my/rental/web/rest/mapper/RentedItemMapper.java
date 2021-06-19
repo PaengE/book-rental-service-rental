@@ -9,10 +9,10 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring", uses = { RentalMapper.class })
 public interface RentedItemMapper extends EntityMapper<RentedItemDTO, RentedItem> {
-    //    @Mapping(source = "rental.id", target = "rentalId")
+    @Mapping(source = "rental.id", target = "rentalId")
     RentedItemDTO toDto(RentedItem rentedItem);
 
-    //    @Mapping(source = "rentalId", target = "rental")
+    @Mapping(source = "rentalId", target = "rental")
     RentedItem toEntity(RentedItemDTO rentedItemDTO);
 
     default RentedItem fromId(Long id) {

@@ -27,7 +27,7 @@
       "otherEntityField": "id"
     }
   ],
-  "changelogDate": "20200518075300",
+  "changelogDate": "20210601145018",
   "entityTableName": "rented_item",
   "dto": "mapstruct",
   "pagination": "pagination",

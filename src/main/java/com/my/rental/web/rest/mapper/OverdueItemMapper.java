@@ -10,10 +10,10 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring", uses = { RentalMapper.class })
 public interface OverdueItemMapper extends EntityMapper<OverdueItemDTO, OverdueItem> {
-    //    @Mapping(source = "rental.id", target = "rentalId")
+    @Mapping(source = "rental.id", target = "rentalId")
     OverdueItemDTO toDto(OverdueItem overdueItem);
 
-    //    @Mapping(source = "rentalId", target = "rental")
+    @Mapping(source = "rentalId", target = "rental")
     OverdueItem toEntity(OverdueItemDTO overdueItemDTO);
 
     default OverdueItem fromId(Long id) {

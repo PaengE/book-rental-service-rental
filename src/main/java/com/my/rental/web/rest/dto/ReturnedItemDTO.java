@@ -13,9 +13,9 @@ public class ReturnedItemDTO implements Serializable {
 
     private Long bookId;
 
-    private String bookTitle;
-
     private LocalDate returnedDate;
 
-    private RentalDTO rental;
+    private String bookTitle;
+
+    private Long rentalId;
 }

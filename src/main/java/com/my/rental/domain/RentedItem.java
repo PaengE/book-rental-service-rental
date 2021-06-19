@@ -31,10 +31,6 @@ public class RentedItem implements Serializable {
     @Column(name = "book_id")
     private Long bookId;
 
-    // 대출 도서명
-    @Column(name = "book_title")
-    private String bookTitle;
-
     // 대출 시작 일자
     @Column(name = "rented_date")
     private LocalDate rentedDate;
@@ -42,6 +38,10 @@ public class RentedItem implements Serializable {
     // 반납 예정 일자
     @Column(name = "due_date")
     private LocalDate dueDate;
+
+    // 대출 도서명
+    @Column(name = "book_title")
+    private String bookTitle;
 
     // 연관 Rental
     @ManyToOne

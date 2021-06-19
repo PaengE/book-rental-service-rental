@@ -37,7 +37,7 @@
     "packageFolder": "com/my/rental",
     "jwtSecretKey": "YjNjZDE4MGU0ZWRiYzMwZjZmNmRhZjY0YWM0ZWMzYTE5NDFjMDIzMGM4OTY3ZGM4MDM3NWQ5NWQxNDI1OWRjMmJjM2NjYzVjMWNkNjdiZWU0NmMxOTZlY2MzMDE3NDc2Njc0ODA1YTRkODhjZmUzODY2ZTcwZTZkODkzYTZhZDk=",
     "languages": ["ko", "en"],
-    "entities": ["Rental", "RentedItem"],
+    "entities": ["Rental", "RentedItem", "OverdueItem", "ReturnedItem"],
     "lastLiquibaseTimestamp": 1622559018000
   }
 }

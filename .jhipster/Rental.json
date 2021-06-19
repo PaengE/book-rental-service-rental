@@ -35,7 +35,7 @@
       "relationshipName": "returnedItem"
     }
   ],
-  "changelogDate": "20200518075200",
+  "changelogDate": "20210601145017",
   "entityTableName": "rental",
   "dto": "mapstruct",
   "pagination": "pagination",
