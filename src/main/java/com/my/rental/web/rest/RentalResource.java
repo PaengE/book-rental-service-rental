@@ -88,6 +88,28 @@ public class RentalResource {
     }
 
     /**
+     * {@code PUT  /rentals} : Updates an existing rental.
+     *
+     * @param rentalDTO the rentalDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rentalDTO,
+     * or with status {@code 400 (Bad Request)} if the rentalDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the rentalDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/rentals")
+    public ResponseEntity<RentalDTO> updateRental(@RequestBody RentalDTO rentalDTO) throws URISyntaxException {
+        log.debug("REST request to update Rental : {}", rentalDTO);
+        if (rentalDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        RentalDTO result = rentalMapper.toDto(rentalService.save(rentalMapper.toEntity(rentalDTO)));
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, rentalDTO.getId().toString()))
+            .body(result);
+    }
+
+    /**
      * {@code PUT  /rentals/:id} : Updates an existing rental.
      *
      * @param id        the id of the rentalDTO to save.
@@ -203,6 +225,40 @@ public class RentalResource {
         return ResponseEntity.ok().body(result);
     }
 
+    /**
+     * 도서 연체처리 하기
+     *
+     * @param rentalId
+     * @param bookId
+     *
+     */
+    @PostMapping("/rentals/{rentalId}/OverdueItem/{bookId}")
+    public ResponseEntity<Void> BeOverdue(@PathVariable("rentalId") Long rentalId, @PathVariable("bookId") Long bookId) {
+        rentalService.beOverdueBook(rentalId, bookId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 연체도서 반납하기
+     *
+     * @param userid
+     * @param book
+     * @return
+     */
+    @DeleteMapping("/rentals/{userid}/OverdueItem/{book}")
+    public ResponseEntity returnOverdueBook(@PathVariable("userid") Long userid, @PathVariable("book") Long book)
+        throws InterruptedException, ExecutionException, JsonProcessingException {
+        Rental rental = rentalService.returnOverdueBook(userid, book);
+        RentalDTO result = rentalMapper.toDto(rental);
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * 대출불가 해제하기
+     *
+     * @param userId
+     * @return
+     */
     @PutMapping("/rentals/release-overdue/user/{userId}")
     public ResponseEntity releaseOverdue(@PathVariable("userId") Long userId) {
         LateFeeDTO latefeeDTO = new LateFeeDTO();
@@ -218,6 +274,12 @@ public class RentalResource {
         }
 
         RentalDTO rentalDTO = rentalMapper.toDto(rentalService.releaseOverdue(userId));
+        return ResponseEntity.ok().body(rentalDTO);
+    }
+
+    @GetMapping("/rentals/loadInfo/{userId}")
+    public ResponseEntity loadRentalInfo(@PathVariable("userId") Long userId) {
+        RentalDTO rentalDTO = rentalMapper.toDto(rentalService.findRentalByUser(userId).get());
         return ResponseEntity.ok().body(rentalDTO);
     }
 }

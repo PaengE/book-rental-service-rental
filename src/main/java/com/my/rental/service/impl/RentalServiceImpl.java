@@ -3,6 +3,7 @@ package com.my.rental.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.my.rental.adaptor.RentalProducer;
 import com.my.rental.domain.Rental;
+import com.my.rental.domain.event.UserIdCreated;
 import com.my.rental.repository.RentalRepository;
 import com.my.rental.service.RentalService;
 import com.my.rental.web.rest.errors.RentUnavailableException;
@@ -56,6 +57,12 @@ public class RentalServiceImpl implements RentalService {
     public void delete(Long id) {
         log.debug("Request to delete Rental : {}", id);
         rentalRepository.deleteById(id);
+    }
+
+    public Rental createRental(UserIdCreated userIdCreated) {
+        Rental rental = Rental.createRental(userIdCreated.getUserId());
+        rentalRepository.save(rental);
+        return rental;
     }
 
     /**
@@ -153,6 +160,11 @@ public class RentalServiceImpl implements RentalService {
         rental = rental.makeRentUnable();
         rentalRepository.save(rental);
         return bookId;
+    }
+
+    @Override
+    public Optional<Rental> findRentalByUser(Long userId) {
+        return rentalRepository.findByUserId(userId);
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.my.rental.domain.event;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -8,9 +7,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@AllArgsConstructor
-public class PointChanged {
+public class UserIdCreated {
 
     private Long userId;
-    private int points;
 }
