@@ -45,6 +45,7 @@ public class RentalProducerImpl implements RentalProducer {
     @Override
     public void updateBookStatus(Long bookId, String bookStatus) throws ExecutionException, InterruptedException, JsonProcessingException {
         StockChanged stockChanged = new StockChanged(bookId, bookStatus);
+        log.debug("publish updateBookStatus msg : {}", stockChanged);
         String message = objectMapper.writeValueAsString(stockChanged);
         producer.send(new ProducerRecord<>(TOPIC_BOOK, message)).get();
     }
@@ -53,6 +54,7 @@ public class RentalProducerImpl implements RentalProducer {
     @Override
     public void savePoints(Long userId, int pointPerBooks) throws ExecutionException, InterruptedException, JsonProcessingException {
         PointChanged pointChanged = new PointChanged(userId, pointPerBooks);
+        log.debug("publish savePoints msg : {}", pointChanged);
         String message = objectMapper.writeValueAsString(pointChanged);
         producer.send(new ProducerRecord<>(TOPIC_POINT, message)).get();
     }
@@ -64,6 +66,7 @@ public class RentalProducerImpl implements RentalProducer {
         CatalogChanged catalogChanged = new CatalogChanged();
         catalogChanged.setBookId(bookId);
         catalogChanged.setEventType(eventType);
+        log.debug("publish updateBookCatalogStatus msg : {}", catalogChanged);
         String message = objectMapper.writeValueAsString(catalogChanged);
         producer.send(new ProducerRecord<>(TOPIC_CATALOG, message)).get();
     }
