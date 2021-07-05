@@ -2,6 +2,7 @@ package com.my.rental.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.my.rental.domain.Rental;
+import com.my.rental.domain.event.UserIdCreated;
 import com.my.rental.web.rest.dto.RentalDTO;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -42,6 +43,13 @@ public interface RentalService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     *
+     * User 생성시 Rental 생성
+     *
+     * **/
+    Rental createRental(UserIdCreated userIdCreated);
 
     /****
      *
@@ -87,6 +95,14 @@ public interface RentalService {
      *
      * ****/
     Long beOverdueBook(Long rentalId, Long bookId);
+
+    /**
+     * Rental 조회
+     *
+     * @param userId
+     * @return
+     */
+    Optional<Rental> findRentalByUser(Long userId);
 
     /**
      * 연체료 조회
