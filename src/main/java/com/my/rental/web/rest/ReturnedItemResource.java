@@ -80,6 +80,28 @@ public class ReturnedItemResource {
      * or with status {@code 500 (Internal Server Error)} if the returnedItemDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @PutMapping("/returned-items")
+    public ResponseEntity<ReturnedItemDTO> updateReturnedItem(@RequestBody ReturnedItemDTO returnedItemDTO) throws URISyntaxException {
+        log.debug("REST request to update ReturnedItem : {}", returnedItemDTO);
+        if (returnedItemDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        ReturnedItemDTO result = returnedItemMapper.toDto(returnedItemService.save(returnedItemMapper.toEntity(returnedItemDTO)));
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, returnedItemDTO.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PUT  /returned-items} : Updates an existing returnedItem.
+     *
+     * @param returnedItemDTO the returnedItemDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated returnedItemDTO,
+     * or with status {@code 400 (Bad Request)} if the returnedItemDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the returnedItemDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
     @PutMapping("/returned-items/{id}")
     public ResponseEntity<ReturnedItemDTO> updateReturnedItem(
         @PathVariable(value = "id", required = false) final Long id,
@@ -145,5 +167,17 @@ public class ReturnedItemResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/returned-items/rental/{rentalId}")
+    public ResponseEntity<List<ReturnedItemDTO>> loadReturnedItemsByRental(@PathVariable("rentalId") Long rentalId, Pageable pageable) {
+        Page<ReturnedItemDTO> returnedItemDTOS = returnedItemService
+            .findReturnedItemsByRental(rentalId, pageable)
+            .map(returnedItemMapper::toDto);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+            ServletUriComponentsBuilder.fromCurrentRequest(),
+            returnedItemDTOS
+        );
+        return ResponseEntity.ok().headers(headers).body(returnedItemDTOS.getContent());
     }
 }

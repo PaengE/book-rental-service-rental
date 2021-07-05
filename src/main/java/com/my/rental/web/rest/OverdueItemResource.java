@@ -80,6 +80,28 @@ public class OverdueItemResource {
      * or with status {@code 500 (Internal Server Error)} if the overdueItemDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @PutMapping("/overdue-items")
+    public ResponseEntity<OverdueItemDTO> updateOverdueItem(@RequestBody OverdueItemDTO overdueItemDTO) throws URISyntaxException {
+        log.debug("REST request to update OverdueItem : {}", overdueItemDTO);
+        if (overdueItemDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        OverdueItemDTO result = overdueItemMapper.toDto(overdueItemService.save(overdueItemMapper.toEntity(overdueItemDTO)));
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, overdueItemDTO.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PUT  /overdue-items} : Updates an existing overdueItem.
+     *
+     * @param overdueItemDTO the overdueItemDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated overdueItemDTO,
+     * or with status {@code 400 (Bad Request)} if the overdueItemDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the overdueItemDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
     @PutMapping("/overdue-items/{id}")
     public ResponseEntity<OverdueItemDTO> updateOverdueItem(
         @PathVariable(value = "id", required = false) final Long id,
@@ -145,5 +167,17 @@ public class OverdueItemResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/overdue-items/rental/{rentalId}")
+    public ResponseEntity<List<OverdueItemDTO>> loadOverdueItemsByRental(@PathVariable("rentalId") Long rentalId, Pageable pageable) {
+        Page<OverdueItemDTO> overdueItemDTOS = overdueItemService
+            .findOverdueItemsByRental(rentalId, pageable)
+            .map(overdueItemMapper::toDto);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+            ServletUriComponentsBuilder.fromCurrentRequest(),
+            overdueItemDTOS
+        );
+        return ResponseEntity.ok().headers(headers).body(overdueItemDTOS.getContent());
     }
 }
